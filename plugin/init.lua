@@ -76,17 +76,22 @@ end
 wez.on("format-tab-title", function(tab, _, _, conf, _, _)
   local palette = conf.resolved_palette
 
+  -- Get the index and format it
   local index = tab.tab_index + 1
-  local offset = #tostring(index) + #options.separator.left_icon + (2 * options.separator.space) + 2
-  local title = index
-    .. utilities._space(options.separator.left_icon, options.separator.space, nil)
-    .. tabs.get_title(tab)
-
-  local width = conf.tab_max_width - offset
-  if #title > conf.tab_max_width then
-    title = wez.truncate_right(title, width) .. "…"
+  local title = tabs.get_title(tab)
+  
+  -- Calculate space needed for fixed elements
+  local fixed_space = #tostring(index) + (#options.separator.field_icon * 2) + (options.separator.space * 4)
+  
+  -- Calculate remaining width for title
+  local title_width = conf.tab_max_width - fixed_space
+  
+  -- Truncate title if needed
+  if #title > title_width then
+    title = wez.truncate_right(title, title_width) .. "…"
   end
 
+  -- Set colors based on active state
   local fg = palette.tab_bar.inactive_tab.fg_color
   local bg = palette.tab_bar.inactive_tab.bg_color
   if tab.is_active then
@@ -94,10 +99,14 @@ wez.on("format-tab-title", function(tab, _, _, conf, _, _)
     bg = palette.tab_bar.active_tab.bg_color
   end
 
+  -- Build the tab with separators
   return {
     { Background = { Color = bg } },
     { Foreground = { Color = fg } },
-    { Text = utilities._space(title, 0, 2) },
+    { Text = utilities._space(options.separator.field_icon, options.separator.space) },
+    { Text = utilities._space(tostring(index), options.separator.space) },
+    { Text = utilities._space(title, options.separator.space) },
+    { Text = utilities._space(options.separator.field_icon, options.separator.space) },
   }
 end)
 
