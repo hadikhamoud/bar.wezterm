@@ -81,7 +81,7 @@ wez.on("format-tab-title", function(tab, _, _, conf, _, _)
   local title = tabs.get_title(tab)
   
   -- Calculate space needed for fixed elements
-  local fixed_space = #tostring(index) + (#options.separator.field_icon * 2) + (options.separator.space * 4)
+  local fixed_space = #tostring(index) + (#options.separator.field_icon * 2) + (options.separator.space * 2)
   
   -- Calculate remaining width for title
   local title_width = conf.tab_max_width - fixed_space
@@ -99,14 +99,14 @@ wez.on("format-tab-title", function(tab, _, _, conf, _, _)
     bg = palette.tab_bar.active_tab.bg_color
   end
 
-  -- Build the tab with separators
+  -- Build the tab with minimal spacing
   return {
     { Background = { Color = bg } },
     { Foreground = { Color = fg } },
-    { Text = utilities._space(options.separator.field_icon, options.separator.space) },
-    { Text = utilities._space(tostring(index), options.separator.space) },
-    { Text = utilities._space(title, options.separator.space) },
-    { Text = utilities._space(options.separator.field_icon, options.separator.space) },
+    { Text = options.separator.field_icon },
+    { Text = tostring(index) },
+    { Text = title },
+    { Text = options.separator.field_icon },
   }
 end)
 
@@ -215,6 +215,22 @@ wez.on("update-status", function(window, pane)
   table.insert(right_cells, { Text = string.rep(" ", options.padding.right) })
 
   window:set_right_status(wez.format(right_cells))
+
+  local bg = window:effective_config().resolved_palette.tab_bar.background
+  
+  -- Add vertical bar between tabs
+  window:set_config_overrides({
+    tab_bar_style = {
+      new_tab = wez.format({
+        { Background = { Color = bg } },
+        { Text = "│" },
+      }),
+      new_tab_hover = wez.format({
+        { Background = { Color = bg } },
+        { Text = "│" },
+      }),
+    },
+  })
 end)
 
 return M
